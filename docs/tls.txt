@@ -1,0 +1,167 @@
+Introduction
+============
+
+Recent versions of RabbitMQ support secure inter-node cluster communication with TLS.  The coverage of this subject in the official RabbitMQ documentation is sparse and lacking in clarity.  This document aims to provide a simple, step-by-step guide towards securing cluster communication channels.  It also is applicable to secure client/server communication.  While untested, it is believed that the setup instructions in this document cover secure federation as well, as long as amqps is specified as the protocol in the URL.
+
+Installation
+============
+
+In this tutorial, we will configure a 2-node cluster.  The cluster members will be known as rabbit1 and rabbit2.
+
+Package Installation (all nodes)
+--------------------------------
+Installing rabbitmq-server meets all of the requirements, such as erlang.
+
+  apt-get install rabbitmq-server
+
+Setup a Certificate Authority and Generate Keypairs
+---------------------------------------------------
+The longterm goal should be to maintain a certificate authority, for issuing certificates destined for internal use in applications such as rabbitmq, galera, etc.  This example simply follows the official rabbitmq documentation
+
+  cd /etc/rabbitmq
+  mkdir testca
+  cd testca
+  mkdir certs private
+  chmod 700 private
+  echo 01 > serial
+  touch index.txt
+
+Create an openssl.cnf file inside /etc/rabbitmq/testca
+------------------------------------------------------
+[ ca ]
+default_ca = testca
+
+[ testca ]
+dir = .
+certificate = $dir/cacert.pem
+database = $dir/index.txt
+new_certs_dir = $dir/certs
+private_key = $dir/private/cakey.pem
+serial = $dir/serial
+
+default_crl_days = 7
+default_days = 365
+default_md = sha1
+
+policy = testca_policy
+x509_extensions = certificate_extensions
+
+[ testca_policy ]
+commonName = supplied
+stateOrProvinceName = optional
+countryName = optional
+emailAddress = optional
+organizationName = optional
+organizationalUnitName = optional
+
+[ certificate_extensions ]
+basicConstraints = CA:false
+
+[ req ]
+default_bits = 2048
+default_keyfile = ./private/cakey.pem
+default_md = sha1
+prompt = yes
+distinguished_name = root_ca_distinguished_name
+x509_extensions = root_ca_extensions
+
+[ root_ca_distinguished_name ]
+commonName = hostname
+
+[ root_ca_extensions ]
+basicConstraints = CA:true
+keyUsage = keyCertSign, cRLSign
+
+[ client_ca_extensions ]
+basicConstraints = CA:false
+keyUsage = digitalSignature
+extendedKeyUsage = 1.3.6.1.5.5.7.3.2
+
+[ server_ca_extensions ]
+basicConstraints = CA:false
+keyUsage = keyEncipherment
+extendedKeyUsage = 1.3.6.1.5.5.7.3.1
+
+Generate the key pair for our CA
+--------------------------------
+  cd /etc/rabbitmq/testca
+  openssl req -x509 -config openssl.cnf -newkey rsa:2048 -days 365 \
+      -out cacert.pem -outform PEM -subj /CN=MyTestCA/ -nodes
+  openssl x509 -in cacert.pem -out cacert.cer -outform DER
+
+(warning) It is advisable to manage the CA on a different server and to protect the CA key with filesystem-level permissions at a minimum.
+
+Generate the key pair for servers, a CSR and a signed certificate
+-----------------------------------------------------------------
+This example covers rabbit1, it is necessary to repeat for additional cluster members such as rabbit2 (make sure to change paths).
+  cd /etc/rabbitmq
+  mkdir rabbit1
+  cd rabbit1
+  openssl genrsa -out key.pem 2048
+  openssl req -new -key key.pem -out req.pem -outform PEM \
+      -subj /CN=$(hostname)/O=server/ -nodes
+  cd ../testca
+  openssl ca -config openssl.cnf -in ../rabbit1/req.pem -out \
+      ../rabbit1/cert.pem -notext -batch -extensions server_ca_extensions
+  cd ../rabbit1
+  openssl pkcs12 -export -out keycert.p12 -in cert.pem -inkey key.pem
+  /etc/rabbitmq/rabbitmq.config
+
+In this simple example, the CA was setup on rabbit1.  Make sure to copy cacert.pem, cert.pem and key.pem to rabbit2 and to update the paths in the following configuration file example:
+[
+  {ssl, [{versions, ['tlsv1.2', 'tlsv1.1']}]},
+  {rabbit, [
+     {ssl_listeners, [5671]},
+     {ssl_options, [{cacertfile,"/etc/rabbitmq/testca/cacert.pem"},
+                    {certfile,"/etc/rabbitmq/rabbit1/cert.pem"},
+                    {keyfile,"/etc/rabbitmq/rabbit1/key.pem"},
+                    {verify,verify_peer},
+                    {fail_if_no_peer_cert,true}]}
+   ]}
+].
+
+(info) The allowed TLS versions are specified to disallow the use of SSL (<= v3) and TLS v1.0, which are potentially vulnerable to attacks such as poodle.
+
+Create a rabbit.pem file
+------------------------
+Repeat for rabbit2
+  cd /etc/rabbitmq/rabbit1
+  cat cert.pem key.pem > rabbit.pem
+  chown rabbitmq.root *
+  chmod 640 key.pem rabbit.pem
+
+Create /etc/rabbitmq/rabbitmq-env.conf
+--------------------------------------
+  export ERL_SSL_PATH=/usr/lib/erlang/lib/ssl-5.3.2/ebin
+  export RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS="-pa /usr/lib/erlang/lib/ssl-5.3.2/ebin -proto_dist inet_tls -ssl_dist_opt server_certfile /etc/rabbitmq/rabbit1/rabbit.pem -ssl_dist_opt server_secure_renegotiate true client_secure_renegotiate true"
+   (warning) Make sure to customize these settings as necessary, specifically the ssl ebin version which is listed as 5.3.2 in this example.
+
+Stop rabbitmq
+-------------
+Check the process table after and kill any beam or epmd process that may still be running
+  service rabbitmq stop
+
+Set the erlang cookie to be the same on all cluster members
+-----------------------------------------------------------
+Update /var/lib/rabbitmq/.erlang.cookie
+
+Start rabbitmq and stop the app on a single node, then join the cluster
+-----------------------------------------------------------------------
+  service rabbitmq start
+  rabbit2# rabbitmqctl stop_app
+  rabbit2# rabbitmqctl join_cluster rabbit@rabbit1
+  rabbit2# rabbitmqctl start_app
+  rabbit2# rabbitmqctl cluster_status
+(info) rabbitmq most easily works with short names, not fqdns
+
+Done!
+-----
+That's it, the cluster should be functional at this point.  If any errors crop up, reviewing logs under /var/log/rabbitmq/ may provide useful information.
+
+Is it Encrypted?  Really?
+-------------------------
+To test things out, using tcpdump with the -A flag is recommended.  Make sure to specify the correct interface and ports (any beam or epmd ports visible with netstat), or at least use a host filter.  By installing the rabbitmq-management plugins with rabbitmq-plugins, it is simple to create queues and publish/get messages to assist in testing.
+
+References
+https://www.rabbitmq.com/ssl.html
+https://www.rabbitmq.com/clustering-ssl.html

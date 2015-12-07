@@ -1,0 +1,16 @@
+{% set rabbitmq = salt['grains.filter_by']({
+    'Debian': {
+        'package': 'rabbitmq-server',
+        'service': 'rabbitmq-server',
+        'conf_file': '/etc/rabbitmq/rabbitmq.config',
+        'env_conf_file': '/etc/rabbitmq/rabbitmq-env.conf',
+        'rabbitmqadmin_conf_file': '/root/.rabbitmqadmin.conf',
+        'rabbitmq_env_conf_file': '/etc/rabbitmq/rabbitmq-env.conf',
+        'rabbitmqctl_bin': '/usr/sbin/rabbitmqctl',
+        'rabbitmqadmin_bin': '/usr/local/bin/rabbitmqadmin',
+        'sentinel_conf_file': '/etc/redis/sentinel.conf',
+        'erlang_cookie': '/var/lib/rabbitmq/.erlang.cookie',
+        'user': 'rabbitmq',
+        'group': 'rabbitmq',
+    },
+}) %}

@@ -1,0 +1,87 @@
+rabbitmq_cluster:
+  cluster_join_host: rabbit1
+  erlang_cookie: my_secret_rabbit_cluster
+  broker_config_backup_directory: /backups/rabbitmq
+  environment_variables: []
+  rabbitmq_config:
+    ssl:
+      enabled: True
+      port: 5671
+      # Test certificate and key, DO NOT USE THESE!!!
+      ca_cert: |
+        -----BEGIN CERTIFICATE-----
+        MIICxjCCAa6gAwIBAgIJAJAEaI+IzY/JMA0GCSqGSIb3DQEBBQUAMBMxETAPBgNV
+        BAMMCGhvc3RuYW1lMB4XDTE1MTIwNjA5Mjk0NloXDTI1MTIwMzA5Mjk0NlowEzER
+        MA8GA1UEAwwIaG9zdG5hbWUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB
+        AQDG4VB3gi2jsSTX7JIJrrItW2y/Tru3grAy03lPD/2zwSUH2hCzBJuBudRBqAg1
+        GCOWE1WahZClCoR05A1zJBjezWzg/nj1XkeboymXvfKL89zw2NGQ/+LqO7b7hykn
+        6NutiiKb6DwvWFz7lEqqqzWlLYlIwS5tui4zV4Rov7kRESfrg015NPkWbCkROg+t
+        4pyqayimPxd/Mf3j9JwspvQt1s0p7rSHmG7r5vOpx/gpsxFZUl4njPX26od7I6ZN
+        rC3pAmXIienIBKVBcHICrJynO5UCj6NjVTLTdl0BfiKfXNredHtI7NMPO2tYuqLc
+        tYzqTqTtN3T/ic0tD6mMpwylAgMBAAGjHTAbMAwGA1UdEwQFMAMBAf8wCwYDVR0P
+        BAQDAgEGMA0GCSqGSIb3DQEBBQUAA4IBAQAFZyd6bvhVQl0BdkEjonty9c1OzyRv
+        p7muUlOEVgscIj/PzOXScVBhHYPXjJVUuKw9meOG8YwyUdb+DAPM1ppWJfVFdDHE
+        AaeRGN+e987K7hzg0FAQP9sfUdNwsNKYgGhOf6X1cTomRNAtrXoFxXMS/6+yOih5
+        Zb68oosIMvoAYiv9ytX35voXEPpt0bz5Bq/edxuDzK5Ad6rcG3jOeb2aNYiog0JH
+        b7E1m5JdwUeiWxoVobSJum3v6p8nNds7sItQuVlx/v2ylHimnDL8B1k/uEmPpsES
+        EA8nPpKn3eYlVVs6TUyWs6kA9DJ1ypVUU8EqNPDP+gFywQUM8wFAQRa6
+        -----END CERTIFICATE-----
+      ca_key: |
+        -----BEGIN PRIVATE KEY-----
+        MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDG4VB3gi2jsSTX
+        7JIJrrItW2y/Tru3grAy03lPD/2zwSUH2hCzBJuBudRBqAg1GCOWE1WahZClCoR0
+        5A1zJBjezWzg/nj1XkeboymXvfKL89zw2NGQ/+LqO7b7hykn6NutiiKb6DwvWFz7
+        lEqqqzWlLYlIwS5tui4zV4Rov7kRESfrg015NPkWbCkROg+t4pyqayimPxd/Mf3j
+        9JwspvQt1s0p7rSHmG7r5vOpx/gpsxFZUl4njPX26od7I6ZNrC3pAmXIienIBKVB
+        cHICrJynO5UCj6NjVTLTdl0BfiKfXNredHtI7NMPO2tYuqLctYzqTqTtN3T/ic0t
+        D6mMpwylAgMBAAECggEAELe98N3TglAQvcnYGNJDjgaCZK50nx9wOkWGi/vXIrYY
+        q8lL4BCCFeyOCBrc3cGytBnZ90xE9Wql6cGF0+jz4j64aU1a051iPZYAmA3Shqsw
+        JlrDewHXjEMKxaf98KnlVXgoIpzp+jzeTBOSFzifIMxsHt6GTZj56zzvF3MOVn3J
+        eu/qXTrfbgmZgPJSEh3J03B2mpTX8T6QSQjLvDaTe2MOaaZve98FLJHRjKQ6WuJu
+        /vOc9AncTXco/i6d5xLIDbHbInIzVgAgpxbbVLeRiQFxMEhd0c8yw3Miw//exrlU
+        5j7UlxSYD8BtqN0Y/q279HQWqjlKwXZNi8UnelMGoQKBgQD+14r/qfRCfdZLsFwH
+        18xDVJW7ZOzkx8sZBrUBeZU18FL5yaY8LtrvQTLD8Gc24j+ywsZ4hXXU3v2aLRGZ
+        zhnOkPKWniQtQgRRqXAydDnaxYM0zHGFa4F9wOXIb0e3XmRKW5FRMLhe0++528Iz
+        74mszTTe0oVVvpCEhW967fmdGQKBgQDHyKvNIQcnSd1nCrifNpxek2RpQbfxGPbU
+        5b+jY4uxapyaaxIwBqbdsYkCxE8A+8MGC8KwWVPxHzMe9wFE+RqdZ63/wjKJiYLr
+        9PZsdzfebwjl9pFzC59DYNLtvVpljpHidN28MtLEyyRoVOzSkTiUIKFduC7BBndO
+        +KLF2wSRbQKBgD/la0SPKF9DjeeMYIbW5LA9FQ3XUE5Mie/MbrXf9jl/+E4I8VVF
+        qj8y6beXH0nzkGUR0RGG5PRqtMtjYXZe5rmUPj7lh8yRMOQIx8jeu2LPAwbJ++yn
+        99+/7d1DiYfAcwTx0I262X9tRD4li5vaA3sAOLFlt2i4TyPrEPiRknSBAoGBAMIz
+        xR0/j86XNMsnVtQdp98fc6oFoiKRW88UDjdrWq15rwVEM4fPz4ENRNwVq56PHMLR
+        x8zY6IopA+6DuQ4s/7wmvrMxOSMNMuDfXHOPaBWm5YV1K2oj0AsVIbTMLgUuk40I
+        gUqiNNPrjFaGxzbgx5jmJzYNBhXIjU2Mz914y3X5AoGANbLNVIO0g8Y/E1MZQ+40
+        8qIReUUwrY/7XPUcoWZ3IDzbS/JDg9Bfuz/eRok4oRR4YIfmXSbLgJ+oemD/aqPk
+        nJyfmxq5lT8AUI/GrD9j1Zht358Q/vQC/+1gzB6xb6Y2sF+oK8xe0hczwNATPZGM
+        EqZJLNFK7/mkz6aIy9ZgIPM=
+        -----END PRIVATE KEY-----
+  plugins:
+    enabled:
+      - rabbitmq_management
+    disabled: []
+  users:
+    # Use bin/rabbit_hash to generate hashes, do not use the example hashes below...
+    present:
+      - username: root
+        password_hash: "BjHdYiDp/2M6VLz3/iQOHOX4WLs="
+        tags:
+          - administrator
+        permissions:
+          - vhostpath: "/"
+            conf: ".*"
+            write: ".*"
+            read: ".*"
+      - username: reader
+        password_hash: "SF6tM1IdGWw1AIXYN968SNG3KLA="
+        permissions:
+          - vhostpath: "/"
+            conf: ".*"
+            read: ".*"
+      - username: writer
+        password_hash: "49OpvVkcmjePCKItrq922JGRP2w="
+        permissions:
+          - vhostpath: "/"
+            conf: ".*"
+            write: ".*"
+    absent:
+      - guest

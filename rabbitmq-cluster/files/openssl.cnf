@@ -1,0 +1,54 @@
+[ ca ]
+default_ca = rabbitmq_cluster
+
+[ rabbitmq_cluster ]
+dir = /etc/rabbitmq/ssl/ca
+certificate = $dir/cert.pem
+database = $dir/index.txt
+#new_certs_dir = $dir/certs
+new_certs_dir = /etc/rabbitmq/ssl/server
+private_key = $dir/key.pem
+serial = $dir/serial
+
+default_crl_days = 7
+default_days = 3650
+default_md = sha1
+
+policy =  rabbitmq_cluster_policy
+x509_extensions = certificate_extensions
+
+[ rabbitmq_cluster_policy ]
+commonName = supplied
+stateOrProvinceName = optional
+countryName = optional
+emailAddress = optional
+organizationName = optional
+organizationalUnitName = optional
+
+[ certificate_extensions ]
+basicConstraints = CA:false
+
+[ req ]
+default_bits = 2048
+default_keyfile = key.pem
+default_md = sha1
+prompt = no
+distinguished_name = root_ca_distinguished_name
+x509_extensions = root_ca_extensions
+
+[ root_ca_distinguished_name ]
+commonName = hostname
+
+[ root_ca_extensions ]
+basicConstraints = CA:true
+keyUsage = keyCertSign, cRLSign
+
+[ client_ca_extensions ]
+basicConstraints = CA:false
+keyUsage = digitalSignature
+extendedKeyUsage = 1.3.6.1.5.5.7.3.2
+
+[ server_ca_extensions ]
+basicConstraints = CA:false
+keyUsage = keyEncipherment
+extendedKeyUsage = 1.3.6.1.5.5.7.3.1

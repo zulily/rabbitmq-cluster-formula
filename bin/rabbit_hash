@@ -1,0 +1,87 @@
+#! /usr/bin/env python
+#
+# Copyright (C) 2015 zulily, llc
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+#  rabbit_hash -- create a rabbitmq password hash from input
+#
+#  Having hashes can be useful for example to avoid storing clear-text
+#  passwords in saltstack pillar data.  The rabbitmqctl command
+#  only supports passwords, but the api and the rabbitmqadmin command
+#  support hashes.  Or rather, the latter can support hashes by changing
+#  the reference from password to password_hash in the script.
+#
+#  Also, a small town in Kentucky known for its canine mayors.
+#    http://en.wikipedia.org/wiki/Rabbit_Hash,_Kentucky
+#
+#  Sample adapted from https://gist.github.com/christianclinton/faa1aef119a0919aeb2e
+#
+"""rabbit_hash"""
+
+
+import argparse
+import binascii
+import getpass
+import hashlib
+import os
+import sys
+
+
+def main():
+    """Do some stuff"""
+    parse_arguments()
+    print "\nrabbit_hash -- generate a hash for use by rabbitmq\n"
+    try:
+        pw_hash = encode_rabbit_password_hash(random_salt_32(), password_input())
+        print "\nHash generated as: {0}".format(pw_hash)
+    except:
+        raise
+
+
+def password_input():
+    """Allow user to input a password"""
+    one = getpass.getpass("Enter password: ")
+    two = getpass.getpass("Enter password again: ")
+    if one == two:
+        return one
+    else:
+        raise ValueError("Passwords do not match")
+
+
+def random_salt_32():
+    """Generate a random 32-bit salt"""
+    return binascii.b2a_hex(os.urandom(16))[:8].upper()
+
+
+def encode_rabbit_password_hash(salt, password):
+    """Given a salt and password, generate an encoded hash for a rabbitmq user"""
+    salt_and_password = salt + password.encode('utf-8').encode('hex')
+    salt_and_password = bytearray.fromhex(salt_and_password)
+    salted_md5 = hashlib.md5(salt_and_password).hexdigest()
+    password_hash = bytearray.fromhex(salt + salted_md5)
+    password_hash = binascii.b2a_base64(password_hash).strip()
+
+    return password_hash
+
+
+def parse_arguments():
+    """Collect command-line arguments (none initially)"""
+    parser = argparse.ArgumentParser(prog='rabbit_hash',
+                                     description='Create a hash for a ' + \
+                                     'rabbitmq user account')
+
+    return parser.parse_args()
+
+if __name__ == '__main__':
+    sys.exit(main())
