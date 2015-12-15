@@ -65,7 +65,7 @@ Features
 ========
 + A pair of state files have been developed to manage user settings including tags (authorization levels), password hashes,
   vhosts and read/write permissions, which all reside within pillar.  A script called rabbit_hash has been developed
-  to assist in generating password hashes, it may be found in the techops_tools repository.
+  to assist in generating password hashes, it is bundled with this formula.
 + SSL ( more specifically, TLS 1.1 and 1.2) is supported for client-server communications.  It is possible to enable
   encrypted inter-node communication, but this formula does not yet support that functionality.  See docs/tls.txt
   for a tutorial on setting up inter-node encrypted communication.
@@ -74,7 +74,7 @@ Features
 + Plugins may be enabled or disabled with lists in pillar
 + Environment variables (rabbitmq-env.conf) may be set in pillar
 + Joins a cluster automatically at install time
-+ Installs rabbitmq-server and python clients such as pika and celery
++ Installs rabbitmq-server
 + Will not restart rabbitmq in subsequent, post-install salt formula runs
 
 
